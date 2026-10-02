@@ -1,4 +1,12 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native'
 import { C, codeColor } from '@/constants/theme'
 import { AppBar, Field, Textarea, CodeChip, Icon, Card, PrimaryBtn } from '@/components/ui'
 import type { NavigateFunction, GoBackFunction } from '@/types'
@@ -20,18 +28,30 @@ export function NewMedicalScreen({ nav, goBack }: NewMedicalScreenProps) {
   ]
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-      <AppBar title="Enviar atestado" subtitle={`Etapa ${step} de 5`} onBack={step > 1 ? () => setStep(s => s - 1) : goBack} />
-      <div style={{ height: 3, background: C.surface3, margin: '0 20px 18px' }}>
-        <div style={{ height: '100%', width: `${(step / 5) * 100}%`, background: C.green, borderRadius: 2, transition: 'width 0.3s' }} />
-      </div>
+    <SafeAreaView style={styles.safeArea}>
+      <AppBar
+        title="Enviar atestado"
+        subtitle={`Etapa ${step} de 5`}
+        onBack={step > 1 ? () => setStep(s => s - 1) : goBack}
+      />
+      <View style={styles.progressTrack}>
+        <View
+          style={[
+            styles.progressBar,
+            { width: `${(step / 5) * 100}%` },
+          ]}
+        />
+      </View>
 
-      <div style={{ flex: 1, padding: '0 20px 36px', overflowY: 'auto' }}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Step 1: Soldier data */}
         {step === 1 && (
-          <>
-            <div style={{ fontSize: 16, fontWeight: 600, color: C.text, marginBottom: 16 }}>Dados do militar</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+          <View>
+            <Text style={styles.sectionTitle}>Dados do militar</Text>
+            <View style={styles.form}>
               {[
                 ['Patente', 'S2'],
                 ['Nome de guerra', 'SILVA'],
@@ -41,106 +61,120 @@ export function NewMedicalScreen({ nav, goBack }: NewMedicalScreenProps) {
               ].map(([l, v]) => (
                 <Field key={l} label={l} value={v} readOnly />
               ))}
-            </div>
-            <PrimaryBtn label="Próximo →" onClick={() => setStep(2)} />
-          </>
+            </View>
+            <PrimaryBtn label="Próximo →" onPress={() => setStep(2)} />
+          </View>
         )}
 
         {/* Step 2: Period + symptoms */}
         {step === 2 && (
-          <>
-            <div style={{ fontSize: 16, fontWeight: 600, color: C.text, marginBottom: 16 }}>Período da dispensa</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-              <Field label="Início" value="2026-09-28" onChange={() => {}} type="date" />
-              <Field label="Fim"    value="2026-09-30" onChange={() => {}} type="date" />
-              <Textarea label="Sintomas" value={symptoms} onChange={setSymptoms} placeholder="Descreva os sintomas..." />
-            </div>
-            <PrimaryBtn label="Ver serviços afetados →" onClick={() => setStep(3)} disabled={!symptoms} />
-          </>
+          <View>
+            <Text style={styles.sectionTitle}>Período da dispensa</Text>
+            <View style={styles.form}>
+              <Field label="Início" value="28/09/2026" onChangeText={() => {}} />
+              <Field label="Fim"    value="30/09/2026" onChangeText={() => {}} />
+              <Textarea
+                label="Sintomas"
+                value={symptoms}
+                onChangeText={setSymptoms}
+                placeholder="Descreva os sintomas..."
+              />
+            </View>
+            <PrimaryBtn
+              label="Ver serviços afetados →"
+              onPress={() => setStep(3)}
+              disabled={!symptoms}
+            />
+          </View>
         )}
 
         {/* Step 3: Affected services */}
         {step === 3 && (
-          <>
-            <div style={{ fontSize: 16, fontWeight: 600, color: C.text, marginBottom: 8 }}>Serviços afetados</div>
-            <div style={{ fontSize: 14, color: C.text2, marginBottom: 18, lineHeight: 1.5 }}>
+          <View>
+            <Text style={styles.sectionTitle}>Serviços afetados</Text>
+            <Text style={styles.sectionDesc}>
               Identificamos estes serviços dentro do período informado.
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+            </Text>
+            <View style={styles.svcsList}>
               {affectedSvcs.map((s, i) => (
-                <div key={i} style={{ background: C.surface2, borderRadius: 12, padding: '12px 14px', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 3, height: 32, borderRadius: 2, background: codeColor(s.code).fg }} />
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                <View key={i} style={styles.svcItem}>
+                  <View
+                    style={[
+                      styles.colorBar,
+                      { backgroundColor: codeColor(s.code).fg },
+                    ]}
+                  />
+                  <View>
+                    <View style={styles.svcCodeRow}>
                       <CodeChip code={s.code} size="xs" />
-                      <div style={{ fontSize: 11, color: C.text3, fontFamily: '"JetBrains Mono",monospace' }}>{s.label}</div>
-                    </div>
-                    <div style={{ fontSize: 13, color: C.text2 }}>{s.post}</div>
-                  </div>
-                </div>
+                      <Text style={styles.svcLabel}>{s.label}</Text>
+                    </View>
+                    <Text style={styles.svcPost}>{s.post}</Text>
+                  </View>
+                </View>
               ))}
-            </div>
-            <div style={{ background: C.surface3, borderRadius: 10, padding: '9px 13px', display: 'flex', gap: 6, alignItems: 'flex-start', marginBottom: 22 }}>
+            </View>
+            <View style={styles.infoBox}>
               <Icon name="info" size={13} color={C.text3} />
-              <div style={{ fontSize: 12, color: C.text3, lineHeight: 1.5 }}>Os serviços são identificados automaticamente pela sua escala.</div>
-            </div>
-            <PrimaryBtn label="Continuar →" onClick={() => setStep(4)} />
-          </>
+              <Text style={styles.infoText}>
+                Os serviços são identificados automaticamente pela sua escala.
+              </Text>
+            </View>
+            <PrimaryBtn label="Continuar →" onPress={() => setStep(4)} />
+          </View>
         )}
 
         {/* Step 4: Photo upload */}
         {step === 4 && (
-          <>
-            <div style={{ fontSize: 16, fontWeight: 600, color: C.text, marginBottom: 8 }}>Documento</div>
-            <div style={{ fontSize: 14, color: C.text2, marginBottom: 20, lineHeight: 1.5 }}>Adicione a foto do atestado médico.</div>
+          <View>
+            <Text style={styles.sectionTitle}>Documento</Text>
+            <Text style={styles.sectionDesc}>Adicione a foto do atestado médico.</Text>
             {!hasPhoto ? (
-              <div style={{ border: `2px dashed ${C.borderMed}`, borderRadius: 16, padding: '36px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginBottom: 22 }}>
+              <View style={styles.uploadArea}>
                 <Icon name="photo" size={40} color={C.text3} />
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 15, color: C.text, fontWeight: 500, marginBottom: 4 }}>Adicionar foto do atestado</div>
-                  <div style={{ fontSize: 13, color: C.text3 }}>Toque para selecionar</div>
-                </div>
-                <div style={{ display: 'flex', gap: 10 }}>
+                <View style={styles.uploadTextWrap}>
+                  <Text style={styles.uploadTitle}>Adicionar foto do atestado</Text>
+                  <Text style={styles.uploadSubtitle}>Toque para selecionar</Text>
+                </View>
+                <View style={styles.uploadBtns}>
                   {['Câmera', 'Galeria'].map(opt => (
-                    <button
+                    <Pressable
                       key={opt}
-                      className="tap"
-                      onClick={() => setHasPhoto(true)}
-                      style={{
-                        background: C.surface3,
-                        border: `1px solid ${C.borderMed}`,
-                        borderRadius: 10,
-                        padding: '10px 16px',
-                        fontSize: 14,
-                        color: C.text2,
-                        cursor: 'pointer',
-                      }}
+                      onPress={() => setHasPhoto(true)}
+                      style={({ pressed }) => [
+                        styles.photoOptionBtn,
+                        { opacity: pressed ? 0.75 : 1 },
+                      ]}
                     >
-                      {opt}
-                    </button>
+                      <Text style={styles.photoOptionText}>{opt}</Text>
+                    </Pressable>
                   ))}
-                </div>
-              </div>
+                </View>
+              </View>
             ) : (
-              <div style={{ marginBottom: 22 }}>
-                <div style={{ background: C.greenBg, borderRadius: 14, height: 160, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, border: `1px solid ${C.green}20`, marginBottom: 10 }}>
+              <View style={styles.photoAddedSection}>
+                <View style={styles.photoAddedCard}>
                   <Icon name="check" size={32} color={C.green} />
-                  <div style={{ fontSize: 14, color: C.text2 }}>Foto adicionada</div>
-                </div>
-                <button className="tap" onClick={() => setHasPhoto(false)} style={{ background: 'none', border: 'none', color: C.text2, fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}>
-                  Substituir foto
-                </button>
-              </div>
+                  <Text style={styles.photoAddedText}>Foto adicionada</Text>
+                </View>
+                <Pressable onPress={() => setHasPhoto(false)} style={styles.replaceBtn}>
+                  <Text style={styles.replaceText}>Substituir foto</Text>
+                </Pressable>
+              </View>
             )}
-            <PrimaryBtn label="Revisar atestado →" onClick={() => setStep(5)} disabled={!hasPhoto} />
-          </>
+            <PrimaryBtn
+              label="Revisar atestado →"
+              onPress={() => setStep(5)}
+              disabled={!hasPhoto}
+            />
+          </View>
         )}
 
         {/* Step 5: Review */}
         {step === 5 && (
-          <>
-            <div style={{ fontSize: 16, fontWeight: 600, color: C.text, marginBottom: 16 }}>Revisar atestado</div>
-            <Card style={{ marginBottom: 14 }}>
+          <View>
+            <Text style={styles.sectionTitle}>Revisar atestado</Text>
+            <Card style={styles.reviewCard}>
               {[
                 { l: 'Militar',           v: 'S2 SILVA' },
                 { l: 'Período',           v: '28/09 a 30/09' },
@@ -148,21 +182,224 @@ export function NewMedicalScreen({ nav, goBack }: NewMedicalScreenProps) {
                 { l: 'Documento',         v: 'Foto adicionada ✓' },
                 { l: 'Serviços afetados', v: '3 serviços identificados' },
               ].map((it, i) => (
-                <div key={it.l} style={{ padding: '9px 0', borderTop: i > 0 ? `1px solid ${C.border}` : 'none' }}>
-                  <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>{it.l}</div>
-                  <div style={{ fontSize: 14, color: C.text }}>{it.v}</div>
-                </div>
+                <View
+                  key={it.l}
+                  style={[
+                    styles.metaRow,
+                    { borderTopWidth: i > 0 ? 1 : 0 },
+                  ]}
+                >
+                  <Text style={styles.metaLabel}>{it.l}</Text>
+                  <Text style={styles.metaValue}>{it.v}</Text>
+                </View>
               ))}
             </Card>
-            <div style={{ background: C.surface3, borderRadius: 12, padding: '11px 14px', marginBottom: 20 }}>
-              <div style={{ fontSize: 11, color: C.text3, fontWeight: 600, marginBottom: 3 }}>Próximo passo</div>
-              <div style={{ fontSize: 13, color: C.text2, lineHeight: 1.5 }}>Seu atestado será enviado para análise da Seção.</div>
-            </div>
-            <PrimaryBtn label="Enviar atestado" onClick={() => nav('medical-sent')} />
-          </>
+            <View style={styles.nextStepBox}>
+              <Text style={styles.nextStepTitle}>Próximo passo</Text>
+              <Text style={styles.nextStepDesc}>
+                Seu atestado será enviado para análise da Seção.
+              </Text>
+            </View>
+            <PrimaryBtn
+              label="Enviar atestado"
+              onPress={() => nav('medical-sent')}
+            />
+          </View>
         )}
-      </div>
-    </div>
+      </ScrollView>
+    </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: C.bg,
+  },
+  progressTrack: {
+    height: 3,
+    backgroundColor: C.surface3,
+    marginHorizontal: 20,
+    marginBottom: 18,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: C.green,
+  },
+  container: {
+    paddingHorizontal: 20,
+    paddingBottom: 36,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: C.text,
+    marginBottom: 16,
+  },
+  sectionDesc: {
+    fontSize: 14,
+    color: C.text2,
+    marginBottom: 18,
+    lineHeight: 20,
+  },
+  form: {
+    gap: 12,
+    marginBottom: 20,
+  },
+  svcsList: {
+    gap: 8,
+    marginBottom: 14,
+  },
+  svcItem: {
+    backgroundColor: C.surface2,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: C.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  colorBar: {
+    width: 3,
+    height: 32,
+    borderRadius: 2,
+  },
+  svcCodeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
+  svcLabel: {
+    fontSize: 11,
+    color: C.text3,
+  },
+  svcPost: {
+    fontSize: 13,
+    color: C.text2,
+  },
+  infoBox: {
+    backgroundColor: C.surface3,
+    borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 13,
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'flex-start',
+    marginBottom: 22,
+  },
+  infoText: {
+    fontSize: 12,
+    color: C.text3,
+    lineHeight: 18,
+    flex: 1,
+  },
+  uploadArea: {
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: C.borderMed,
+    borderRadius: 16,
+    paddingVertical: 36,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 22,
+  },
+  uploadTextWrap: {
+    alignItems: 'center',
+  },
+  uploadTitle: {
+    fontSize: 15,
+    color: C.text,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  uploadSubtitle: {
+    fontSize: 13,
+    color: C.text3,
+  },
+  uploadBtns: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  photoOptionBtn: {
+    backgroundColor: C.surface3,
+    borderWidth: 1,
+    borderColor: C.borderMed,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  photoOptionText: {
+    fontSize: 14,
+    color: C.text2,
+  },
+  photoAddedSection: {
+    marginBottom: 22,
+  },
+  photoAddedCard: {
+    backgroundColor: C.greenBg,
+    borderRadius: 14,
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(120,175,105,0.2)',
+    marginBottom: 10,
+  },
+  photoAddedText: {
+    fontSize: 14,
+    color: C.text2,
+  },
+  replaceBtn: {
+    alignItems: 'center',
+  },
+  replaceText: {
+    color: C.text2,
+    fontSize: 13,
+    textDecorationLine: 'underline',
+  },
+  reviewCard: {
+    marginBottom: 14,
+  },
+  metaRow: {
+    paddingVertical: 9,
+    borderTopColor: C.border,
+  },
+  metaLabel: {
+    fontSize: 10,
+    color: C.text3,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 3,
+  },
+  metaValue: {
+    fontSize: 14,
+    color: C.text,
+  },
+  nextStepBox: {
+    backgroundColor: C.surface3,
+    borderRadius: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    marginBottom: 20,
+  },
+  nextStepTitle: {
+    fontSize: 11,
+    color: C.text3,
+    fontWeight: '600',
+    marginBottom: 3,
+  },
+  nextStepDesc: {
+    fontSize: 13,
+    color: C.text2,
+    lineHeight: 18,
+  },
+})
+
 export default NewMedicalScreen

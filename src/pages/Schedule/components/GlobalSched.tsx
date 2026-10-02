@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
+import { View, Text, TextInput, ScrollView, StyleSheet } from 'react-native'
 import { C } from '@/constants/theme'
 import { Icon, CodeChip } from '@/components/ui'
 import { GLOBAL_SCH } from '@/data'
@@ -6,107 +7,201 @@ import { GLOBAL_SCH } from '@/data'
 export function GlobalSched() {
   const [search, setSearch] = useState('')
   const DCOLS = ['SEG M', 'SEG T', 'TER M', 'TER T', 'QUA M', 'SEX M', 'DOM M']
-  const filtered = GLOBAL_SCH.filter(m => !search || m.name.toLowerCase().includes(search.toLowerCase()))
+  const filtered = GLOBAL_SCH.filter(
+    m => !search || m.name.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <div style={{ padding: '0 20px 10px' }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            background: C.surface2,
-            borderRadius: 12,
-            padding: '10px 14px',
-            gap: 8,
-            border: `1px solid ${C.border}`,
-          }}
-        >
+    <View style={styles.container}>
+      {/* Search bar */}
+      <View style={styles.searchSection}>
+        <View style={styles.searchBox}>
           <Icon name="search" size={16} color={C.text3} />
-          <input
+          <TextInput
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChangeText={setSearch}
             placeholder="Buscar militar"
-            style={{
-              flex: 1,
-              background: 'none',
-              border: 'none',
-              outline: 'none',
-              fontSize: 14,
-              color: C.text,
-            }}
+            placeholderTextColor={C.text3}
+            style={styles.searchInput}
           />
-        </div>
-      </div>
-      <div style={{ padding: '0 20px 8px' }}>
-        <div style={{ background: C.surface3, borderRadius: 8, padding: '7px 11px', display: 'flex', alignItems: 'center', gap: 6 }}>
+        </View>
+      </View>
+
+      {/* Info notice */}
+      <View style={styles.infoSection}>
+        <View style={styles.infoBox}>
           <Icon name="info" size={13} color={C.text3} />
-          <div style={{ fontSize: 12, color: C.text3 }}>Apenas para consulta · Ausências: Indisponível</div>
-        </div>
-      </div>
-      <div style={{ flex: 1, overflowX: 'auto', overflowY: 'auto' }}>
-        <div style={{ minWidth: 600 }}>
-          {/* Header */}
-          <div
-            style={{
-              display: 'flex',
-              padding: '0 20px',
-              borderBottom: `1px solid ${C.border}`,
-              position: 'sticky',
-              top: 0,
-              background: C.bg,
-              zIndex: 10,
-            }}
-          >
-            <div style={{ width: 110, flexShrink: 0, padding: '9px 0', fontSize: 10, color: C.text3, fontWeight: 700 }}>
-              MILITAR
-            </div>
-            {DCOLS.map(h => (
-              <div key={h} style={{ flex: 1, padding: '9px 4px', fontSize: 10, color: C.text3, fontWeight: 700, textAlign: 'center', minWidth: 60 }}>
-                {h}
-              </div>
-            ))}
-          </div>
-          {filtered.map((m, mi) => (
-            <div
-              key={m.name}
-              style={{
-                display: 'flex',
-                padding: '0 20px',
-                borderBottom: `1px solid ${C.border}`,
-                background: mi % 2 === 0 ? 'transparent' : `${C.surface}38`,
-              }}
-            >
-              <div style={{ width: 110, flexShrink: 0, padding: '10px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 14,
-                    background: C.surface3,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono",monospace', fontWeight: 700, color: C.green }}>
-                    {m.rank}
-                  </div>
-                </div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {m.name.split(' ')[1]}
-                </div>
-              </div>
-              {m.svc.map((code, ci) => (
-                <div key={ci} style={{ flex: 1, padding: '10px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 60 }}>
-                  {code ? <CodeChip code={code} size="xs" /> : <div style={{ width: 5, height: 5, borderRadius: 3, background: C.surface3 }} />}
-                </div>
+          <Text style={styles.infoText}>
+            Apenas para consulta · Ausências: Indisponível
+          </Text>
+        </View>
+      </View>
+
+      {/* Matrix Table */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.tableBody}>
+          <View style={styles.tableInner}>
+            {/* Header row */}
+            <View style={styles.headerRow}>
+              <View style={styles.colMilitar}>
+                <Text style={styles.headerColText}>MILITAR</Text>
+              </View>
+              {DCOLS.map(h => (
+                <View key={h} style={styles.colDay}>
+                  <Text style={styles.headerColText}>{h}</Text>
+                </View>
               ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+            </View>
+
+            {/* Content rows */}
+            {filtered.map((m, mi) => (
+              <View
+                key={m.name}
+                style={[
+                  styles.dataRow,
+                  { backgroundColor: mi % 2 === 0 ? 'transparent' : 'rgba(16,20,32,0.5)' },
+                ]}
+              >
+                <View style={styles.colMilitarData}>
+                  <View style={styles.rankBadge}>
+                    <Text style={styles.rankText}>{m.rank}</Text>
+                  </View>
+                  <Text style={styles.militarName} numberOfLines={1}>
+                    {m.name.split(' ')[1] || m.name}
+                  </Text>
+                </View>
+                {m.svc.map((code, ci) => (
+                  <View key={ci} style={styles.colDayData}>
+                    {code ? (
+                      <CodeChip code={code} size="xs" />
+                    ) : (
+                      <View style={styles.emptyDot} />
+                    )}
+                  </View>
+                ))}
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      </ScrollView>
+    </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  searchSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: C.surface2,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: C.text,
+    padding: 0,
+  },
+  infoSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  infoBox: {
+    backgroundColor: C.surface3,
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 11,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  infoText: {
+    fontSize: 12,
+    color: C.text3,
+  },
+  tableBody: {
+    paddingBottom: 36,
+  },
+  tableInner: {
+    minWidth: 560,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: C.border,
+    backgroundColor: C.bg,
+  },
+  colMilitar: {
+    width: 110,
+    paddingVertical: 9,
+  },
+  headerColText: {
+    fontSize: 10,
+    color: C.text3,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  colDay: {
+    width: 65,
+    paddingVertical: 9,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+  },
+  dataRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: C.border,
+  },
+  colMilitarData: {
+    width: 110,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  rankBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: C.surface3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rankText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: C.green,
+  },
+  militarName: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: C.text,
+    flex: 1,
+  },
+  colDayData: {
+    width: 65,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: C.surface3,
+  },
+})

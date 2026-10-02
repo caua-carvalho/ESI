@@ -1,4 +1,5 @@
 import React from 'react'
+import { Pressable, View, StyleSheet } from 'react-native'
 import { C } from '@/constants/theme'
 
 export interface SwitchToggleProps {
@@ -8,34 +9,46 @@ export interface SwitchToggleProps {
 
 export function SwitchToggle({ value, onChange }: SwitchToggleProps) {
   return (
-    <div
-      onClick={() => onChange(!value)}
-      className="tap"
-      style={{
-        width: 51,
-        height: 31,
-        borderRadius: 20,
-        background: value ? C.green : C.surface3,
-        position: 'relative',
-        cursor: 'pointer',
-        transition: 'background 0.2s',
-        border: `1px solid ${value ? 'transparent' : C.borderMed}`,
-        flexShrink: 0,
-      }}
+    <Pressable
+      onPress={() => onChange(!value)}
+      style={[
+        styles.track,
+        {
+          backgroundColor: value ? C.green : C.surface3,
+          borderColor: value ? 'transparent' : C.borderMed,
+        },
+      ]}
     >
-      <div
-        style={{
-          position: 'absolute',
-          top: 2,
-          left: value ? 21 : 2,
-          width: 25,
-          height: 25,
-          borderRadius: 12.5,
-          background: '#fff',
-          transition: 'left 0.2s',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.35)',
-        }}
+      <View
+        style={[
+          styles.thumb,
+          {
+            left: value ? 22 : 2,
+          },
+        ]}
       />
-    </div>
+    </Pressable>
   )
 }
+
+const styles = StyleSheet.create({
+  track: {
+    width: 51,
+    height: 31,
+    borderRadius: 20,
+    borderWidth: 1,
+    justifyContent: 'center',
+  },
+  thumb: {
+    width: 25,
+    height: 25,
+    borderRadius: 12.5,
+    backgroundColor: '#ffffff',
+    position: 'absolute',
+    boxShadowColor: '#000',
+    boxShadowOffset: { width: 0, height: 1 },
+    boxShadowOpacity: 0.35,
+    boxShadowRadius: 2,
+    elevation: 3,
+  },
+})

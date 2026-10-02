@@ -1,4 +1,11 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native'
 import { C } from '@/constants/theme'
 import { AppBar, Segmented, Field, Textarea, Icon, PrimaryBtn } from '@/components/ui'
 import type { NavigateFunction, GoBackFunction } from '@/types'
@@ -14,29 +21,102 @@ export function NewOvernightScreen({ nav, goBack }: NewOvernightScreenProps) {
   const [reason, setReason] = useState('')
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto' }}>
+    <SafeAreaView style={styles.safeArea}>
       <AppBar title="Solicitar pernoite" onBack={goBack} />
-      <div style={{ padding: '0 20px 36px' }}>
-        <div style={{ fontSize: 14, color: C.text2, lineHeight: 1.5, marginBottom: 18 }}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.desc}>
           Informe quando você precisa permanecer no alojamento.
-        </div>
-        <div style={{ marginBottom: 16 }}>
-          <Segmented options={['Uma data', 'Período']} value={mode} onChange={setMode} />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 18 }}>
-          <Field label={mode === 'Uma data' ? 'Data' : 'Início'} value={date} onChange={setDate} type="date" />
-          {mode === 'Período' && <Field label="Fim" value="2026-10-02" onChange={() => {}} type="date" />}
-          <Textarea label="Motivo" value={reason} onChange={setReason} placeholder="Descreva o motivo do pernoite..." />
-        </div>
-        <div style={{ background: C.surface3, borderRadius: 12, padding: '11px 14px', display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 22 }}>
+        </Text>
+
+        <View style={styles.segmentWrap}>
+          <Segmented
+            options={['Uma data', 'Período']}
+            value={mode}
+            onChange={setMode}
+          />
+        </View>
+
+        <View style={styles.form}>
+          <Field
+            label={mode === 'Uma data' ? 'Data' : 'Início'}
+            value={date}
+            onChangeText={setDate}
+            placeholder="DD/MM/AAAA"
+          />
+          {mode === 'Período' && (
+            <Field
+              label="Fim"
+              value="2026-10-02"
+              onChangeText={() => {}}
+              placeholder="DD/MM/AAAA"
+            />
+          )}
+          <Textarea
+            label="Motivo"
+            value={reason}
+            onChangeText={setReason}
+            placeholder="Descreva o motivo do pernoite..."
+          />
+        </View>
+
+        <View style={styles.infoBox}>
           <Icon name="info" size={14} color={C.text3} />
-          <div style={{ fontSize: 13, color: C.text3, lineHeight: 1.5 }}>
+          <Text style={styles.infoText}>
             Seu pedido será enviado ao sargento responsável pela sua companhia.
-          </div>
-        </div>
-        <PrimaryBtn label="Enviar pedido" onClick={() => nav('overnight-sent')} disabled={!reason} />
-      </div>
-    </div>
+          </Text>
+        </View>
+
+        <PrimaryBtn
+          label="Enviar pedido"
+          onPress={() => nav('overnight-sent')}
+          disabled={!reason}
+        />
+      </ScrollView>
+    </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: C.bg,
+  },
+  container: {
+    paddingHorizontal: 20,
+    paddingBottom: 36,
+  },
+  desc: {
+    fontSize: 14,
+    color: C.text2,
+    lineHeight: 20,
+    marginBottom: 18,
+  },
+  segmentWrap: {
+    marginBottom: 16,
+  },
+  form: {
+    gap: 14,
+    marginBottom: 18,
+  },
+  infoBox: {
+    backgroundColor: C.surface3,
+    borderRadius: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'flex-start',
+    marginBottom: 22,
+  },
+  infoText: {
+    fontSize: 13,
+    color: C.text3,
+    lineHeight: 18,
+    flex: 1,
+  },
+})
+
 export default NewOvernightScreen

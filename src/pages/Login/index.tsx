@@ -1,9 +1,18 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  Modal,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native'
 import { C } from '@/constants/theme'
 import { Icon, Field, PrimaryBtn, SecondaryBtn } from '@/components/ui'
 
 export interface LoginScreenProps {
-  onLogin: () => void
+  onLogin?: () => void
 }
 
 export function LoginScreen({ onLogin }: LoginScreenProps) {
@@ -15,114 +24,191 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [recovery, setRecovery] = useState(false)
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', background: C.bg, padding: '60px 24px 40px', display: 'flex', flexDirection: 'column' }}>
-      {/* Logo */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 48 }}>
-        <div
-          style={{
-            width: 72,
-            height: 72,
-            borderRadius: 22,
-            background: `linear-gradient(145deg,${C.surface2},${C.surface3})`,
-            border: `1px solid ${C.borderMed}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 20,
-            boxShadow: '0 8px 40px rgba(0,0,0,0.45)',
-          }}
-        >
-          <Icon name="shield" size={36} color={C.green} />
-        </div>
-        <div style={{ fontSize: 26, fontWeight: 700, color: C.text, letterSpacing: '-0.02em' }}>
-          Escala ESI
-        </div>
-        <div style={{ fontSize: 14, color: C.text2, marginTop: 6 }}>
-          Gestão de escala e serviços
-        </div>
-      </div>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Logo */}
+        <View style={styles.logoSection}>
+          <View style={styles.logoBox}>
+            <Icon name="shield" size={36} color={C.green} />
+          </View>
+          <Text style={styles.title}>Escala ESI</Text>
+          <Text style={styles.subtitle}>Gestão de escala e serviços</Text>
+        </View>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <Field label="Patente" value={rank} onChange={setRank} placeholder="Ex: S2" />
-        <Field label="Nome de guerra" value={name} onChange={setName} placeholder="SILVA" />
-        <div style={{ display: 'flex', gap: 12 }}>
-          <div style={{ flex: 1 }}>
-            <Field label="Turma" value={cls} onChange={setCls} placeholder="2024" />
-          </div>
-          <div style={{ flex: 1 }}>
-            <Field label="Antiguidade" value={sen} onChange={setSen} placeholder="12" />
-          </div>
-        </div>
-        <Field label="Senha" value={pass} onChange={setPass} type="password" placeholder="••••••••" />
-        <div style={{ marginTop: 8 }}>
-          <PrimaryBtn label="Entrar" onClick={onLogin} />
-        </div>
-        <button
-          onClick={() => setRecovery(true)}
-          className="tap"
-          style={{
-            background: 'none',
-            border: 'none',
-            color: C.text2,
-            fontSize: 14,
-            cursor: 'pointer',
-            textAlign: 'center',
-            padding: '8px 0',
-          }}
-        >
-          Primeiro acesso / Esqueci a senha
-        </button>
-      </div>
-
-      {/* Recovery bottom sheet */}
-      {recovery && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'rgba(0,0,0,0.72)',
-            display: 'flex',
-            alignItems: 'flex-end',
-            zIndex: 100,
-          }}
-          onClick={() => setRecovery(false)}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: C.surface,
-              borderRadius: '24px 24px 0 0',
-              padding: '24px 24px 48px',
-              width: '100%',
-              border: `1px solid ${C.border}`,
-            }}
+        <View style={styles.form}>
+          <Field label="Patente" value={rank} onChangeText={setRank} placeholder="Ex: S2" />
+          <Field label="Nome de guerra" value={name} onChangeText={setName} placeholder="SILVA" />
+          <View style={styles.row}>
+            <View style={styles.flex1}>
+              <Field label="Turma" value={cls} onChangeText={setCls} placeholder="2024" />
+            </View>
+            <View style={styles.flex1}>
+              <Field label="Antiguidade" value={sen} onChangeText={setSen} placeholder="12" />
+            </View>
+          </View>
+          <Field
+            label="Senha"
+            value={pass}
+            onChangeText={setPass}
+            placeholder="••••••••"
+            secureTextEntry
+          />
+          <View style={styles.btnWrap}>
+            <PrimaryBtn label="Entrar" onPress={onLogin} />
+          </View>
+          <Pressable
+            onPress={() => setRecovery(true)}
+            style={({ pressed }) => [
+              styles.recoveryBtn,
+              { opacity: pressed ? 0.7 : 1 },
+            ]}
           >
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: C.border, margin: '0 auto 24px' }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-              <Icon name="info" size={22} color={C.amber} />
-              <div style={{ fontSize: 16, fontWeight: 600, color: C.text }}>
-                Recuperação de acesso
-              </div>
-            </div>
-            <div
-              style={{
-                background: C.surface2,
-                borderRadius: 12,
-                padding: '14px 16px',
-                border: `1px solid ${C.border}`,
-              }}
-            >
-              <div style={{ fontSize: 14, color: C.text2, lineHeight: 1.6 }}>
-                Para recuperar seu acesso, procure a <strong style={{ color: C.text }}>Seção</strong>.
-              </div>
-            </div>
-            <div style={{ marginTop: 18 }}>
-              <SecondaryBtn label="Entendido" onClick={() => setRecovery(false)} />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+            <Text style={styles.recoveryText}>Primeiro acesso / Esqueci a senha</Text>
+          </Pressable>
+        </View>
+
+        {/* Recovery modal */}
+        <Modal
+          visible={recovery}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setRecovery(false)}
+        >
+          <Pressable style={styles.modalOverlay} onPress={() => setRecovery(false)}>
+            <Pressable style={styles.sheet} onPress={e => e.stopPropagation()}>
+              <View style={styles.dragHandle} />
+              <View style={styles.sheetHeader}>
+                <Icon name="info" size={22} color={C.amber} />
+                <Text style={styles.sheetTitle}>Recuperação de acesso</Text>
+              </View>
+              <View style={styles.sheetBody}>
+                <Text style={styles.sheetDesc}>
+                  Para recuperar seu acesso, procure a <Text style={styles.sheetBold}>Seção</Text>.
+                </Text>
+              </View>
+              <View style={styles.sheetAction}>
+                <SecondaryBtn label="Entendido" onPress={() => setRecovery(false)} />
+              </View>
+            </Pressable>
+          </Pressable>
+        </Modal>
+      </ScrollView>
+    </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: C.bg,
+  },
+  container: {
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    paddingBottom: 40,
+  },
+  logoSection: {
+    alignItems: 'center',
+    marginBottom: 36,
+  },
+  logoBox: {
+    width: 72,
+    height: 72,
+    borderRadius: 22,
+    backgroundColor: C.surface2,
+    borderWidth: 1,
+    borderColor: C.borderMed,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: C.text,
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: C.text2,
+    marginTop: 6,
+  },
+  form: {
+    gap: 14,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  flex1: {
+    flex: 1,
+  },
+  btnWrap: {
+    marginTop: 8,
+  },
+  recoveryBtn: {
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  recoveryText: {
+    color: C.text2,
+    fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.72)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: C.surface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 48,
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  dragHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: C.border,
+    alignSelf: 'center',
+    marginBottom: 24,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 14,
+  },
+  sheetTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: C.text,
+  },
+  sheetBody: {
+    backgroundColor: C.surface2,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  sheetDesc: {
+    fontSize: 14,
+    color: C.text2,
+    lineHeight: 20,
+  },
+  sheetBold: {
+    color: C.text,
+    fontWeight: '600',
+  },
+  sheetAction: {
+    marginTop: 18,
+  },
+})
+
 export default LoginScreen

@@ -1,23 +1,41 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native'
 import { C } from '@/constants/theme'
 import { Segmented, Icon } from '@/components/ui'
 import { REQUESTS } from '@/data'
 import type { Screen, NavigateFunction } from '@/types'
 
 export interface RequestsScreenProps {
-  nav: NavigateFunction
+  nav?: NavigateFunction
+  onNavigate?: (screen: Screen, params?: Record<string, unknown>) => void
 }
 
-export function RequestsScreen({ nav }: RequestsScreenProps) {
+export function RequestsScreen({ nav, onNavigate }: RequestsScreenProps) {
+  const navigate: NavigateFunction = nav ?? onNavigate ?? (() => {})
   const [filter, setFilter] = useState('Todas')
   const pending = ['pending-colleague', 'pending-sergeant', 'pending-section']
   const done    = ['approved', 'rejected', 'completed']
 
   const filtered = REQUESTS.filter(r =>
-    filter === 'Todas' ? true : filter === 'Pendentes' ? pending.includes(r.status) : done.includes(r.status)
+    filter === 'Todas'
+      ? true
+      : filter === 'Pendentes'
+      ? pending.includes(r.status)
+      : done.includes(r.status)
   )
 
-  const icons: Record<string, string> = { swap: 'swap', overnight: 'moon', medical: 'medical' }
+  const icons: Record<string, string> = {
+    swap: 'swap',
+    overnight: 'moon',
+    medical: 'medical',
+  }
   const statusLabel: Record<string, string> = {
     'pending-colleague': 'Aguardando colega',
     'pending-sergeant':  'Aguardando sargento',
@@ -36,96 +54,217 @@ export function RequestsScreen({ nav }: RequestsScreenProps) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-      <div style={{ padding: '52px 20px 0' }}>
-        <div style={{ fontSize: 28, fontWeight: 700, color: C.text, letterSpacing: '-0.02em', marginBottom: 16 }}>
-          Solicitações
-        </div>
-        <div style={{ marginBottom: 14 }}>
-          <Segmented options={['Todas', 'Pendentes', 'Concluídas']} value={filter} onChange={setFilter} />
-        </div>
-      </div>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 32px' }}>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Solicitações</Text>
+        <View style={styles.filterWrap}>
+          <Segmented
+            options={['Todas', 'Pendentes', 'Concluídas']}
+            value={filter}
+            onChange={setFilter}
+          />
+        </View>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {filtered.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 24px', gap: 12 }}>
+          <View style={styles.emptyContainer}>
             <Icon name="doc" size={44} color={C.text3} />
-            <div style={{ fontSize: 16, fontWeight: 600, color: C.text }}>Nenhuma solicitação</div>
-            <div style={{ fontSize: 14, color: C.text3, textAlign: 'center', lineHeight: 1.5 }}>
+            <Text style={styles.emptyTitle}>Nenhuma solicitação</Text>
+            <Text style={styles.emptySubtitle}>
               Você não possui solicitações nesta categoria.
-            </div>
-          </div>
+            </Text>
+          </View>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+          <View style={styles.list}>
             {filtered.map(req => (
-              <div
+              <Pressable
                 key={req.id}
-                className="tap"
-                onClick={() => nav('request-detail', { req })}
-                style={{
-                  background: C.surface2,
-                  borderRadius: 14,
-                  padding: '14px 16px',
-                  border: `1px solid ${C.border}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  cursor: 'pointer',
-                }}
+                onPress={() => navigate('request-detail', { req })}
+                style={({ pressed }) => [
+                  styles.item,
+                  { opacity: pressed ? 0.75 : 1 },
+                ]}
               >
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: C.surface3, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Icon name={icons[req.type]} size={19} color={C.text2} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 2 }}>{req.title}</div>
-                  <div style={{ fontSize: 12, color: C.text3 }}>{req.date}</div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: 3, background: statusColor[req.status] ?? C.gray, flexShrink: 0 }} />
-                  <div style={{ fontSize: 12, color: C.text3, textAlign: 'right', maxWidth: 110 }}>
+                <View style={styles.iconBox}>
+                  <Icon name={icons[req.type] || 'doc'} size={19} color={C.text2} />
+                </View>
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemTitle}>{req.title}</Text>
+                  <Text style={styles.itemDate}>{req.date}</Text>
+                </View>
+                <View style={styles.statusCol}>
+                  <View
+                    style={[
+                      styles.statusDot,
+                      { backgroundColor: statusColor[req.status] ?? C.gray },
+                    ]}
+                  />
+                  <Text style={styles.statusText} numberOfLines={2}>
                     {statusLabel[req.status] ?? req.status}
-                  </div>
-                </div>
-              </div>
+                  </Text>
+                </View>
+              </Pressable>
             ))}
-          </div>
+          </View>
         )}
+
         {/* Quick actions */}
-        <div>
-          <div style={{ fontSize: 11, color: C.text3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>
-            Nova solicitação
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+        <View style={styles.actionsSection}>
+          <Text style={styles.actionsTitle}>Nova solicitação</Text>
+          <View style={styles.actionsRow}>
             {[
-              { label: 'Trocar serviço', icon: 'swap',    screen: 'new-swap' },
-              { label: 'Pernoite',       icon: 'moon',    screen: 'new-overnight' },
-              { label: 'Atestado',       icon: 'medical', screen: 'new-medical' },
+              { label: 'Trocar serviço', icon: 'swap',    screen: 'new-swap' as Screen },
+              { label: 'Pernoite',       icon: 'moon',    screen: 'new-overnight' as Screen },
+              { label: 'Atestado',       icon: 'medical', screen: 'new-medical' as Screen },
             ].map(a => (
-              <button
+              <Pressable
                 key={a.label}
-                className="tap"
-                onClick={() => nav(a.screen as Screen)}
-                style={{
-                  flex: 1,
-                  background: C.surface2,
-                  border: `1px solid ${C.border}`,
-                  borderRadius: 12,
-                  padding: '12px 6px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 6,
-                  cursor: 'pointer',
-                }}
+                onPress={() => navigate(a.screen)}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  { opacity: pressed ? 0.75 : 1 },
+                ]}
               >
                 <Icon name={a.icon} size={20} color={C.green} />
-                <div style={{ fontSize: 11, color: C.text2, textAlign: 'center' }}>{a.label}</div>
-              </button>
+                <Text style={styles.actionLabel}>{a.label}</Text>
+              </Pressable>
             ))}
-          </div>
-        </div>
-      </div>
-    </div>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: C.bg,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: C.text,
+    letterSpacing: -0.5,
+    marginBottom: 16,
+  },
+  filterWrap: {
+    marginBottom: 14,
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 56,
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: C.text,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: C.text3,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  list: {
+    gap: 8,
+    marginBottom: 20,
+  },
+  item: {
+    backgroundColor: C.surface2,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: C.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: C.surface3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  itemInfo: {
+    flex: 1,
+  },
+  itemTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: C.text,
+    marginBottom: 2,
+  },
+  itemDate: {
+    fontSize: 12,
+    color: C.text3,
+  },
+  statusCol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    maxWidth: 120,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    fontSize: 12,
+    color: C.text3,
+    textAlign: 'right',
+  },
+  actionsSection: {
+    marginTop: 10,
+  },
+  actionsTitle: {
+    fontSize: 11,
+    color: C.text3,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 10,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionBtn: {
+    flex: 1,
+    backgroundColor: C.surface2,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    gap: 6,
+  },
+  actionLabel: {
+    fontSize: 11,
+    color: C.text2,
+    textAlign: 'center',
+  },
+})
+
 export default RequestsScreen
 export * from './RequestDetailScreen'

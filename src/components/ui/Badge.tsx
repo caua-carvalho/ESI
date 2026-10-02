@@ -1,4 +1,5 @@
 import React from 'react'
+import { View, Text, StyleSheet } from 'react-native'
 import { C, codeColor } from '@/constants/theme'
 
 export interface CodeChipProps {
@@ -9,28 +10,32 @@ export interface CodeChipProps {
 export function CodeChip({ code, size = 'sm' }: CodeChipProps) {
   const cl = codeColor(code)
   const s = {
-    xs: { fs: 9, p: '2px 5px', r: 4 },
-    sm: { fs: 11, p: '3px 7px', r: 5 },
-    md: { fs: 13, p: '5px 10px', r: 7 },
+    xs: { fs: 9, py: 2, px: 5, r: 4 },
+    sm: { fs: 11, py: 3, px: 7, r: 5 },
+    md: { fs: 13, py: 5, px: 10, r: 7 },
   }[size]
 
   return (
-    <span
+    <View
       style={{
-        fontFamily: '"JetBrains Mono",monospace',
-        fontSize: s.fs,
-        fontWeight: 600,
-        letterSpacing: '0.05em',
-        padding: s.p,
+        backgroundColor: cl.bg,
         borderRadius: s.r,
-        color: cl.fg,
-        background: cl.bg,
-        display: 'inline-block',
-        lineHeight: 1.4,
+        paddingVertical: s.py,
+        paddingHorizontal: s.px,
+        alignSelf: 'flex-start',
       }}
     >
-      {code}
-    </span>
+      <Text
+        style={{
+          fontSize: s.fs,
+          fontWeight: '600',
+          letterSpacing: 0.5,
+          color: cl.fg,
+        }}
+      >
+        {code}
+      </Text>
+    </View>
   )
 }
 
@@ -52,19 +57,24 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   const c = cfg[status] ?? { label: status, color: C.gray, bg: C.grayBg }
 
   return (
-    <span
+    <View
       style={{
-        fontSize: 11,
-        fontWeight: 500,
-        padding: '3px 9px',
+        backgroundColor: c.bg,
+        paddingVertical: 3,
+        paddingHorizontal: 9,
         borderRadius: 20,
-        color: c.color,
-        background: c.bg,
-        display: 'inline-block',
-        lineHeight: 1.5,
+        alignSelf: 'flex-start',
       }}
     >
-      {c.label}
-    </span>
+      <Text
+        style={{
+          fontSize: 11,
+          fontWeight: '500',
+          color: c.color,
+        }}
+      >
+        {c.label}
+      </Text>
+    </View>
   )
 }

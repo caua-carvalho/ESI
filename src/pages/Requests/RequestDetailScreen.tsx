@@ -1,3 +1,5 @@
+import React from 'react'
+import { View, Text, ScrollView, StyleSheet, SafeAreaView } from 'react-native'
 import { C } from '@/constants/theme'
 import { AppBar, Card, StatusBadge, TimelineStep } from '@/components/ui'
 import { REQUESTS } from '@/data'
@@ -13,40 +15,109 @@ export function RequestDetailScreen({ goBack, req }: RequestDetailScreenProps) {
   const isDone = ['approved', 'rejected', 'completed'].includes(r.status)
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto' }}>
+    <SafeAreaView style={styles.safeArea}>
       <AppBar title="Detalhes" onBack={goBack} />
-      <div style={{ padding: '0 20px 36px' }}>
-        <Card style={{ marginBottom: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-            <div>
-              <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Tipo</div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: C.text }}>{r.title}</div>
-            </div>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        <Card style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View>
+              <Text style={styles.metaLabel}>Tipo</Text>
+              <Text style={styles.reqTitle}>{r.title}</Text>
+            </View>
             <StatusBadge status={r.status} />
-          </div>
+          </View>
           {[
             { l: 'Criado em',    v: '28/09 · 08:30' },
             { l: 'Atualizado em', v: '28/09 · 09:02' },
           ].map(it => (
-            <div key={it.l} style={{ padding: '8px 0', borderTop: `1px solid ${C.border}` }}>
-              <div style={{ fontSize: 10, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{it.l}</div>
-              <div style={{ fontSize: 13, color: C.text }}>{it.v}</div>
-            </div>
+            <View key={it.l} style={styles.metaRow}>
+              <Text style={styles.metaLabel}>{it.l}</Text>
+              <Text style={styles.metaVal}>{it.v}</Text>
+            </View>
           ))}
         </Card>
-        <div style={{ fontSize: 13, color: C.text2, fontWeight: 500, marginBottom: 14 }}>Histórico</div>
-        <TimelineStep label="Solicitado"         time="28/09 · 08:30" status="done"                         />
-        <TimelineStep label="Aguardando colega"  time="28/09 · 08:31" status="done"                         />
-        <TimelineStep label="Aceito pelo colega" time="28/09 · 09:02" status={isDone ? 'done' : 'current'}  />
-        <TimelineStep label="Concluído"                               status={isDone ? 'done' : 'pending'}  />
+
+        <Text style={styles.historyTitle}>Histórico</Text>
+        <TimelineStep label="Solicitado"         time="28/09 · 08:30" status="done" />
+        <TimelineStep label="Aguardando colega"  time="28/09 · 08:31" status="done" />
+        <TimelineStep label="Aceito pelo colega" time="28/09 · 09:02" status={isDone ? 'done' : 'current'} />
+        <TimelineStep label="Concluído"                               status={isDone ? 'done' : 'pending'} />
+
         {r.status === 'rejected' && (
-          <div style={{ background: C.redBg, borderRadius: 12, padding: '11px 14px', marginTop: 8 }}>
-            <div style={{ fontSize: 11, color: C.text3, marginBottom: 4 }}>Motivo da recusa</div>
-            <div style={{ fontSize: 13, color: C.text2 }}>Serviços conflitantes na escala.</div>
-          </div>
+          <View style={styles.rejectNotice}>
+            <Text style={styles.rejectHeader}>Motivo da recusa</Text>
+            <Text style={styles.rejectDesc}>Serviços conflitantes na escala.</Text>
+          </View>
         )}
-      </div>
-    </div>
+      </ScrollView>
+    </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: C.bg,
+  },
+  container: {
+    paddingHorizontal: 20,
+    paddingBottom: 36,
+  },
+  card: {
+    marginBottom: 16,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  metaLabel: {
+    fontSize: 10,
+    color: C.text3,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  reqTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: C.text,
+  },
+  metaRow: {
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+  },
+  metaVal: {
+    fontSize: 13,
+    color: C.text,
+  },
+  historyTitle: {
+    fontSize: 13,
+    color: C.text2,
+    fontWeight: '500',
+    marginBottom: 14,
+  },
+  rejectNotice: {
+    backgroundColor: C.redBg,
+    borderRadius: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    marginTop: 8,
+  },
+  rejectHeader: {
+    fontSize: 11,
+    color: C.text3,
+    marginBottom: 4,
+  },
+  rejectDesc: {
+    fontSize: 13,
+    color: C.text2,
+  },
+})
+
 export default RequestDetailScreen

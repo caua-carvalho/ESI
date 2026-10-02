@@ -1,14 +1,25 @@
+import React from 'react'
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native'
 import { C } from '@/constants/theme'
 import { Icon } from '@/components/ui'
 import { NOTIFS } from '@/data'
-import type { NavigateFunction } from '@/types'
+import type { Screen, NavigateFunction, NotificationItem } from '@/types'
 
 export interface NotificationsScreenProps {
-  nav: NavigateFunction
+  nav?: NavigateFunction
+  onNavigate?: (screen: Screen, params?: Record<string, unknown>) => void
 }
 
-export function NotificationsScreen({ nav }: NotificationsScreenProps) {
-  const groups = {
+export function NotificationsScreen({ nav, onNavigate }: NotificationsScreenProps) {
+  const navigate: NavigateFunction = nav ?? onNavigate ?? (() => {})
+  const groups: Record<string, NotificationItem[]> = {
     'Hoje':       NOTIFS.filter(n => n.day === 'today'),
     'Ontem':      NOTIFS.filter(n => n.day === 'yesterday'),
     'Anteriores': NOTIFS.filter(n => n.day === 'earlier'),
@@ -33,114 +44,163 @@ export function NotificationsScreen({ nav }: NotificationsScreenProps) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-      <div style={{ padding: '52px 20px 14px' }}>
-        <div style={{ fontSize: 28, fontWeight: 700, color: C.text, letterSpacing: '-0.02em' }}>Avisos</div>
-      </div>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 36px' }}>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Avisos</Text>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {Object.entries(groups).map(([title, items]) =>
           items.length === 0 ? null : (
-            <div key={title} style={{ marginBottom: 20 }}>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: C.text3,
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                  marginBottom: 8,
-                  paddingLeft: 2,
-                }}
-              >
-                {title}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <View key={title} style={styles.group}>
+              <Text style={styles.groupTitle}>{title}</Text>
+              <View style={styles.groupList}>
                 {items.map(n => (
-                  <div
+                  <Pressable
                     key={n.id}
-                    className="tap"
-                    onClick={() => (n.type === 'reserve' ? nav('reserve-convocation') : nav('notification-detail', { n }))}
-                    style={{
-                      background: C.surface2,
-                      borderRadius: 14,
-                      padding: '11px 13px',
-                      border: `1px solid ${n.read ? C.border : C.borderMed}`,
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: 11,
-                      cursor: 'pointer',
-                      position: 'relative',
-                    }}
+                    onPress={() =>
+                      n.type === 'reserve'
+                        ? navigate('reserve-convocation')
+                        : navigate('notification-detail', { n })
+                    }
+                    style={({ pressed }) => [
+                      styles.item,
+                      {
+                        borderColor: n.read ? C.border : C.borderMed,
+                        opacity: pressed ? 0.75 : 1,
+                      },
+                    ]}
                   >
-                    {!n.read && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          left: 8,
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          width: 5,
-                          height: 5,
-                          borderRadius: 3,
-                          background: C.blue,
-                        }}
-                      />
-                    )}
-                    <div
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 11,
-                        background: C.surface3,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        marginLeft: n.read ? 0 : 8,
-                      }}
+                    {!n.read && <View style={styles.unreadDot} />}
+                    <View
+                      style={[
+                        styles.iconBox,
+                        { marginLeft: n.read ? 0 : 8 },
+                      ]}
                     >
-                      <Icon name={notifIcon[n.type] ?? 'bell'} size={17} color={notifColor[n.type] ?? C.text2} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 3 }}>
-                        <div
-                          style={{
-                            fontSize: 14,
-                            fontWeight: n.read ? 400 : 600,
-                            color: C.text,
-                            flex: 1,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
+                      <Icon
+                        name={notifIcon[n.type] ?? 'bell'}
+                        size={17}
+                        color={notifColor[n.type] ?? C.text2}
+                      />
+                    </View>
+                    <View style={styles.itemInfo}>
+                      <View style={styles.itemTopRow}>
+                        <Text
+                          style={[
+                            styles.itemTitle,
+                            { fontWeight: n.read ? '400' : '600' },
+                          ]}
+                          numberOfLines={1}
                         >
                           {n.title}
-                        </div>
-                        <div style={{ fontSize: 11, color: C.text3, flexShrink: 0, marginLeft: 8 }}>{n.time}</div>
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 13,
-                          color: C.text3,
-                          lineHeight: 1.4,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
+                        </Text>
+                        <Text style={styles.itemTime}>{n.time}</Text>
+                      </View>
+                      <Text style={styles.itemBody} numberOfLines={1}>
                         {n.body}
-                      </div>
-                    </div>
-                  </div>
+                      </Text>
+                    </View>
+                  </Pressable>
                 ))}
-              </div>
-            </div>
+              </View>
+            </View>
           )
         )}
-      </div>
-    </div>
+      </ScrollView>
+    </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: C.bg,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 14,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: C.text,
+    letterSpacing: -0.5,
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingBottom: 36,
+  },
+  group: {
+    marginBottom: 20,
+  },
+  groupTitle: {
+    fontSize: 11,
+    color: C.text3,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 8,
+    paddingLeft: 2,
+  },
+  groupList: {
+    gap: 4,
+  },
+  item: {
+    backgroundColor: C.surface2,
+    borderRadius: 14,
+    paddingVertical: 11,
+    paddingHorizontal: 13,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 11,
+  },
+  unreadDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: C.blue,
+    alignSelf: 'center',
+  },
+  iconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 11,
+    backgroundColor: C.surface3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  itemInfo: {
+    flex: 1,
+  },
+  itemTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 3,
+  },
+  itemTitle: {
+    fontSize: 14,
+    color: C.text,
+    flex: 1,
+  },
+  itemTime: {
+    fontSize: 11,
+    color: C.text3,
+    marginLeft: 8,
+  },
+  itemBody: {
+    fontSize: 13,
+    color: C.text3,
+    lineHeight: 18,
+  },
+})
+
 export default NotificationsScreen
 export * from './NotificationDetailScreen'
 export * from './ReserveConvocationScreen'

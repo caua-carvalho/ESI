@@ -1,4 +1,13 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native'
 import { C } from '@/constants/theme'
 import { AppBar, Icon, Avatar, CodeChip, PrimaryBtn } from '@/components/ui'
 import type { NavigateFunction, GoBackFunction } from '@/types'
@@ -19,100 +28,189 @@ export function SelectColleagueScreen({ nav, goBack }: SelectColleagueScreenProp
     { id: 'almeida',  rank: 'S2', name: 'ALMEIDA',  code: 'TACF', dateLabel: '02 OUT · MANHÃ' },
   ]
 
-  const filtered = colleagues.filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase()))
+  const filtered = colleagues.filter(
+    c => !search || c.name.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto' }}>
+    <SafeAreaView style={styles.safeArea}>
       <AppBar title="Escolher colega" onBack={goBack} />
-      <div style={{ padding: '0 20px 36px' }}>
-        <div style={{ fontSize: 11, color: C.text3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
-          2 · Selecione o colega
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            background: C.surface2,
-            borderRadius: 12,
-            padding: '10px 14px',
-            gap: 8,
-            border: `1px solid ${C.border}`,
-            marginBottom: 12,
-          }}
-        >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.stepTitle}>2 · Selecione o colega</Text>
+
+        <View style={styles.searchBox}>
           <Icon name="search" size={16} color={C.text3} />
-          <input
+          <TextInput
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChangeText={setSearch}
             placeholder="Buscar militar"
-            style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 14, color: C.text }}
+            placeholderTextColor={C.text3}
+            style={styles.searchInput}
           />
-        </div>
-        <div
-          style={{
-            background: C.surface3,
-            borderRadius: 8,
-            padding: '7px 11px',
-            display: 'flex',
-            gap: 6,
-            alignItems: 'center',
-            marginBottom: 14,
-          }}
-        >
+        </View>
+
+        <View style={styles.infoBox}>
           <Icon name="info" size={13} color={C.text3} />
-          <div style={{ fontSize: 12, color: C.text3 }}>Trocas realizadas dentro da mesma companhia.</div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
+          <Text style={styles.infoText}>
+            Trocas realizadas dentro da mesma companhia.
+          </Text>
+        </View>
+
+        <View style={styles.list}>
           {filtered.map(c => {
             const active = sel === c.id
             return (
-              <div
+              <Pressable
                 key={c.id}
-                className="tap"
-                onClick={() => setSel(c.id)}
-                style={{
-                  background: active ? C.greenBg : C.surface2,
-                  borderRadius: 14,
-                  padding: '14px 16px',
-                  border: `1px solid ${active ? C.green + '40' : C.border}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  cursor: 'pointer',
-                }}
+                onPress={() => setSel(c.id)}
+                style={({ pressed }) => [
+                  styles.item,
+                  {
+                    backgroundColor: active ? C.greenBg : C.surface2,
+                    borderColor: active ? `${C.green}60` : C.border,
+                    opacity: pressed ? 0.75 : 1,
+                  },
+                ]}
               >
                 <Avatar rank={c.rank} initials={c.name.slice(0, 3)} size={44} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 2 }}>
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemName}>
                     {c.rank} {c.name}
-                  </div>
-                  <div style={{ fontSize: 12, color: C.text2 }}>2ª Companhia</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                  </Text>
+                  <Text style={styles.itemCompany}>2ª Companhia</Text>
+                  <View style={styles.itemCodeRow}>
                     <CodeChip code={c.code} size="xs" />
-                    <div style={{ fontSize: 11, color: C.text3 }}>{c.dateLabel}</div>
-                  </div>
-                </div>
-                <div
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 11,
-                    border: `2px solid ${active ? C.green : C.border}`,
-                    background: active ? C.green : 'transparent',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
+                    <Text style={styles.itemDateLabel}>{c.dateLabel}</Text>
+                  </View>
+                </View>
+                <View
+                  style={[
+                    styles.radio,
+                    {
+                      borderColor: active ? C.green : C.border,
+                      backgroundColor: active ? C.green : 'transparent',
+                    },
+                  ]}
                 >
-                  {active && <div style={{ width: 8, height: 8, borderRadius: 4, background: '#fff' }} />}
-                </div>
-              </div>
+                  {active && <View style={styles.radioInner} />}
+                </View>
+              </Pressable>
             )
           })}
-        </div>
-        <PrimaryBtn label="Revisar troca →" onClick={() => nav('review-swap', { colleagueId: sel })} disabled={!sel} />
-      </div>
-    </div>
+        </View>
+
+        <PrimaryBtn
+          label="Revisar troca →"
+          onPress={() => nav('review-swap', { colleagueId: sel })}
+          disabled={!sel}
+        />
+      </ScrollView>
+    </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: C.bg,
+  },
+  container: {
+    paddingHorizontal: 20,
+    paddingBottom: 36,
+  },
+  stepTitle: {
+    fontSize: 11,
+    color: C.text3,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 12,
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: C.surface2,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: C.border,
+    marginBottom: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: C.text,
+    padding: 0,
+  },
+  infoBox: {
+    backgroundColor: C.surface3,
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 11,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 14,
+  },
+  infoText: {
+    fontSize: 12,
+    color: C.text3,
+  },
+  list: {
+    gap: 8,
+    marginBottom: 24,
+  },
+  item: {
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  itemInfo: {
+    flex: 1,
+  },
+  itemName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: C.text,
+    marginBottom: 2,
+  },
+  itemCompany: {
+    fontSize: 12,
+    color: C.text2,
+  },
+  itemCodeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  itemDateLabel: {
+    fontSize: 11,
+    color: C.text3,
+  },
+  radio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ffffff',
+  },
+})
+
 export default SelectColleagueScreen

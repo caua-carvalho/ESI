@@ -1,4 +1,11 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+} from 'react-native'
 import { C } from '@/constants/theme'
 import { REQUESTS, NOTIFS } from '@/data'
 import type { Screen, NavigateFunction } from '@/types'
@@ -29,64 +36,84 @@ export function DemoNav({ nav }: DemoNavProps) {
   ]
 
   return (
-    <div style={{ position: 'absolute', bottom: 90, right: 12, zIndex: 200 }}>
+    <View style={styles.container}>
       {open && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 36,
-            right: 0,
-            width: 200,
-            background: C.elevated,
-            borderRadius: 14,
-            border: `1px solid ${C.borderMed}`,
-            padding: '8px 0',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-            maxHeight: 340,
-            overflowY: 'auto',
-          }}
-        >
-          {screens.map(s => (
-            <button
-              key={s.screen + s.label}
-              onClick={() => {
-                nav(s.screen, s.params)
-                setOpen(false)
-              }}
-              style={{
-                display: 'block',
-                width: '100%',
-                background: 'none',
-                border: 'none',
-                padding: '9px 14px',
-                textAlign: 'left',
-                fontSize: 13,
-                color: C.text2,
-                cursor: 'pointer',
-              }}
-              className="tap"
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
+        <View style={styles.menu}>
+          <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false}>
+            {screens.map(s => (
+              <Pressable
+                key={s.screen + s.label}
+                onPress={() => {
+                  nav(s.screen, s.params)
+                  setOpen(false)
+                }}
+                style={({ pressed }) => [
+                  styles.menuItem,
+                  { opacity: pressed ? 0.6 : 1 },
+                ]}
+              >
+                <Text style={styles.menuItemText}>{s.label}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
       )}
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="tap"
-        style={{
-          background: C.elevated,
-          border: `1px solid ${C.borderMed}`,
-          borderRadius: 20,
-          padding: '6px 12px',
-          fontSize: 12,
-          color: C.text3,
-          cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-        }}
+
+      <Pressable
+        onPress={() => setOpen(o => !o)}
+        style={({ pressed }) => [
+          styles.triggerBtn,
+          { opacity: pressed ? 0.8 : 1 },
+        ]}
       >
-        {open ? '✕ fechar' : '⊞ telas'}
-      </button>
-    </div>
+        <Text style={styles.triggerText}>{open ? '✕ fechar' : '⊞ telas'}</Text>
+      </Pressable>
+    </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    bottom: 90,
+    right: 12,
+    zIndex: 200,
+  },
+  menu: {
+    position: 'absolute',
+    bottom: 36,
+    right: 0,
+    width: 200,
+    maxHeight: 340,
+    backgroundColor: C.elevated,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: C.borderMed,
+    paddingVertical: 8,
+  },
+  menuScroll: {
+    maxHeight: 320,
+  },
+  menuItem: {
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+  },
+  menuItemText: {
+    fontSize: 13,
+    color: C.text2,
+  },
+  triggerBtn: {
+    backgroundColor: C.elevated,
+    borderWidth: 1,
+    borderColor: C.borderMed,
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  triggerText: {
+    fontSize: 12,
+    color: C.text3,
+  },
+})
+
+export default DemoNav

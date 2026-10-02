@@ -1,4 +1,5 @@
 import React from 'react'
+import Svg, { Path } from 'react-native-svg'
 import { C } from '@/constants/theme'
 
 export interface IconProps {
@@ -35,8 +36,9 @@ export function Icon({ name, size = 24, color = C.text2 }: IconProps) {
   }
 
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" style={{ color, flexShrink: 0 }}>
-      <path d={d[name] ?? 'M12 12m-6 0a6 6 0 1 0 12 0a6 6 0 1 0-12 0'} fill="currentColor" />
-    </svg>
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path d={d[name] ?? 'M12 12m-6 0a6 6 0 1 0 12 0a6 6 0 1 0-12 0'} fill={color} />
+    </Svg>
   )
 }
+export default Icon

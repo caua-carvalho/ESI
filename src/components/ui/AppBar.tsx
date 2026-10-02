@@ -1,4 +1,5 @@
 import React from 'react'
+import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { C } from '@/constants/theme'
 import { Icon } from './Icon'
 
@@ -11,38 +12,55 @@ export interface AppBarProps {
 
 export function AppBar({ title, subtitle, onBack, right }: AppBarProps) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px 12px', gap: 12 }}>
+    <View style={styles.container}>
       {onBack && (
-        <button
-          onClick={onBack}
-          className="tap"
-          style={{
-            background: C.surface3,
-            border: 'none',
-            borderRadius: 12,
-            width: 36,
-            height: 36,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            flexShrink: 0,
-          }}
+        <Pressable
+          onPress={onBack}
+          style={({ pressed }) => [
+            styles.backBtn,
+            { opacity: pressed ? 0.7 : 1 },
+          ]}
         >
           <Icon name="arrowL" size={20} color={C.text} />
-        </button>
+        </Pressable>
       )}
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 17, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>
-          {title}
-        </div>
-        {subtitle && (
-          <div style={{ fontSize: 12, color: C.text3, marginTop: 2 }}>
-            {subtitle}
-          </div>
-        )}
-      </div>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>{title}</Text>
+        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+      </View>
       {right}
-    </div>
+    </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 12,
+    gap: 12,
+  },
+  backBtn: {
+    backgroundColor: C.surface3,
+    borderRadius: 12,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleContainer: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: C.text,
+  },
+  subtitle: {
+    fontSize: 12,
+    color: C.text3,
+    marginTop: 2,
+  },
+})
